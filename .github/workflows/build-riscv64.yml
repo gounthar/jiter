@@ -27,8 +27,13 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set up build environment
         run: |
-          /opt/python-3.12/bin/python3.12 -m venv /tmp/build-venv
+          python -m venv /tmp/build-venv
           . /tmp/build-venv/bin/activate
           pip install --upgrade pip maturin
 
@@ -53,7 +58,7 @@ jobs:
       - name: Capture Python version
         id: python_info
         run: |
-          echo "python_version=$(/opt/python-3.12/bin/python3.12 --version)" \
+          echo "python_version=$(python --version)" \
             >> "$GITHUB_OUTPUT"
 
       - name: Upload wheel artifact
