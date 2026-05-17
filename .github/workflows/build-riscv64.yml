@@ -26,9 +26,18 @@ jobs:
           ref: ${{ inputs.release_tag || github.ref }}
           fetch-depth: 0
 
+      # The RISE riscv64 image no longer ships Python at
+      # /opt/python-3.12/bin/python3.12 (the base image was rebuilt after the
+      # python-versions RPATH fix), so the old hardcoded path now exits 127.
+      # actions/setup-python resolves a riscv64 build and is image-churn proof.
       - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.12'
+
+      - name: Install build tooling
         run: |
-          /opt/python-3.12/bin/python3.12 -m venv /tmp/build-venv
+          python -m venv /tmp/build-venv
           . /tmp/build-venv/bin/activate
           pip install --upgrade pip maturin
 
@@ -53,8 +62,8 @@ jobs:
       - name: Capture Python version
         id: python_info
         run: |
-          echo "python_version=$(/opt/python-3.12/bin/python3.12 --version)" \
-            >> "$GITHUB_OUTPUT"
+          . /tmp/build-venv/bin/activate
+          echo "python_version=$(python --version)" >> "$GITHUB_OUTPUT"
 
       - name: Upload wheel artifact
         uses: actions/upload-artifact@v4
